@@ -6,8 +6,9 @@ import com.example.games.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -16,16 +17,19 @@ public class GameService {
 	private final GameRepository gameRepository;
 
 	public List<GameDTO> getAllGames() {
-		return gameRepository.findAll()
-			.stream()
-			.map(GameDTO::toDto)
-			.collect(Collectors.toList());
+		List<Game> games = gameRepository.findAll();
+		List<GameDTO> gameDtoList = new ArrayList<>();
+		games.forEach(game -> {
+			GameDTO dto = GameDTO.toDto(game);
+			gameDtoList.add(dto);
+		});
+		return gameDtoList;
 	}
 
 	public GameDTO getGameById(Long id) {
-		return gameRepository.findById(id)
-			.map(GameDTO::toDto)
-			.orElse(null);
+		Game game = gameRepository.findById(id).orElse(null);
+		if (Objects.isNull(game)) return null;
+		return GameDTO.toDto(game);
 	}
 
 	public GameDTO createGame(GameDTO dto) {
