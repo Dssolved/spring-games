@@ -1,17 +1,18 @@
 package com.example.games.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "games")
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Table(name = "games")
 public class Game {
 
 	@Id
@@ -22,4 +23,16 @@ public class Game {
 	private String genre;
 	private int releaseYear;
 	private double rating;
+
+	@ManyToOne
+	@JoinColumn(name = "publisher_id")
+	private Publisher publisher;
+
+	@ManyToMany
+	@JoinTable(
+		name = "game_tags",
+		joinColumns = @JoinColumn(name = "game_id"),
+		inverseJoinColumns = @JoinColumn(name = "tag_id")
+	)
+	private Set<Tag> tags = new HashSet<>();
 }

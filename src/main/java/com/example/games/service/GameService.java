@@ -2,57 +2,39 @@ package com.example.games.service;
 
 import com.example.games.dto.GameDTO;
 import com.example.games.entity.Game;
+import com.example.games.entity.Publisher;
+import com.example.games.entity.Tag;
+import com.example.games.mapper.GameMapper;
 import com.example.games.repository.GameRepository;
+import com.example.games.repository.PublisherRepository;
+import com.example.games.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class GameService {
 
 	private final GameRepository gameRepository;
+	private final PublisherRepository publisherRepository;
+	private final TagRepository tagRepository;
+	private final GameMapper gameMapper;
 
-	public List<GameDTO> getAllGames() {
+	public List<GameDTO> getAll() {
 		List<Game> games = gameRepository.findAll();
-		List<GameDTO> gameDtoList = new ArrayList<>();
-		games.forEach(game -> {
-			GameDTO dto = GameDTO.toDto(game);
-			gameDtoList.add(dto);
-		});
-		return gameDtoList;
+		return gameMapper.toDtoList(games);
 	}
 
-	public GameDTO getGameById(Long id) {
-		Game game = gameRepository.findById(id).orElse(null);
-		if (Objects.isNull(game)) return null;
-		return GameDTO.toDto(game);
-	}
-
-	public GameDTO createGame(GameDTO dto) {
-		Game game = GameDTO.toEntity(dto);
-		Game saved = gameRepository.save(game);
-		return GameDTO.toDto(saved);
-	}
-
-	public GameDTO updateGame(Long id, GameDTO dto) {
-		Game existing = gameRepository.findById(id).orElse(null);
-		if (existing == null) return null;
-
-		existing.setTitle(dto.getTitle());
-		existing.setRating(dto.getRating());
-		Game updated = gameRepository.save(existing);
-		return GameDTO.toDto(updated);
-	}
-
-	public boolean deleteGame(Long id) {
-		if (gameRepository.existsById(id)) {
-			gameRepository.deleteById(id);
-			return true;
-		}
-		return false;
+	public GameDTO create(GameDTO dto) {
+		Game game = gameMapper.toEntity(dto);
+		Publisher publisher = publisherRepository.findByName(dto.getPublisherName())
+			.orElse(null);
+		game.setPublisher(publisher);
+		Set<Tag> tags = tagRepository.findAllByNameIn(dto.getTags());
+		game.setTags(tags);
+		return gameMapper.toDto(gameRepository.save(game));
 	}
 }
