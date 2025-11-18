@@ -23,4 +23,14 @@ public class GameController {
 	public GameDTO create(@RequestBody GameDTO dto) {
 		return gameService.create(dto);
 	}
+
+	@PutMapping("/{id}")
+	public GameDTO update(@PathVariable Long id, @RequestBody GameDTO dto) {
+		return gameService.update(id, dto);
+	}
+
+	@DeleteMapping("/{id}")
+	public void delete(@PathVariable Long id) {
+		gameService.delete(id);
+	}
 }

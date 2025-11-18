@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -36,5 +38,34 @@ public class GameService {
 		Set<Tag> tags = tagRepository.findAllByNameIn(dto.getTags());
 		game.setTags(tags);
 		return gameMapper.toDto(gameRepository.save(game));
+	}
+
+	public GameDTO update(Long id, GameDTO dto) {
+		Optional<Game> optionalGame = gameRepository.findById(id);
+		if (optionalGame.isEmpty()) {
+			throw new NoSuchElementException("Game not found");
+		}
+		Game game = optionalGame.get();
+
+		game.setTitle(dto.getTitle());
+		game.setGenre(dto.getGenre());
+		game.setReleaseYear(dto.getReleaseYear());
+		game.setRating(dto.getRating());
+
+		Publisher publisher = publisherRepository.findByName(dto.getPublisherName())
+			.orElse(null);
+		if (publisher == null) {
+			throw new NoSuchElementException("Publisher not found");
+		}
+		game.setPublisher(publisher);
+
+		Set<Tag> tags = tagRepository.findAllByNameIn(dto.getTags());
+		game.setTags(tags);
+
+		return gameMapper.toDto(gameRepository.save(game));
+	}
+
+	public void delete(Long id) {
+		gameRepository.deleteById(id);
 	}
 }
